@@ -31,6 +31,96 @@ A typical beginner example in this repository (like the family relations script)
 
 ---
 
+## 🧩 Prolog in One Picture
+
+> Examples come from [`relations/relations.pl`](relations/relations.pl).
+
+```
+ FACT       parent( jiri , alena ).        "jiri is a parent of alena"
+            ──┬───  ─────┬──────  ┬
+            name    2 arguments   └─ every clause ends with "."
+                         │
+                         └──► ARITY = 2  ──►  predicate  parent/2
+
+ RULE       grandfather(Grandpa, Child) :-     ◄── HEAD (what we conclude)
+                male(Grandpa),                 ┐
+                parent(Grandpa, Parent),       ├─ BODY (what must hold)
+                parent(Parent, Child).         ┘
+                                     ":-" = IF     "," = AND     ";" = OR
+
+ QUERY   ?- grandfather( Who , tereza ).
+         ─┬─             ─┬─   ──┬───
+         ask         Variable   atom
+                   (Uppercase)  (lowercase = constant)
+
+ ANSWER     Who = jiri.
+```
+
+| Term | In one line |
+|---|---|
+| **Atom** | a constant, lowercase: `jiri`, `tereza` |
+| **Variable** | an unknown, Uppercase or `_`: `Who`, `Child` |
+| **Fact** | `head.`, always true |
+| **Rule** | `head :- body.`, true if the body holds |
+| **Clause** | a single fact or rule |
+| **Predicate** | all clauses with the same name and arity, e.g. `parent/2` |
+| **Arity** | the number of arguments; `parent/2` ≠ `parent/3` |
+
+### Unification: "can these two be made equal?"
+
+```
+ parent(jiri, X )   ⟷   parent(jiri, alena)    ✅  X = alena
+ parent(jiri, X )   ⟷   parent(jana, alena)    ❌  jiri ≠ jana
+ parent( X  , X )   ⟷   parent(jiri, alena)    ❌  X can't be both
+```
+
+### Operators: the essentials
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `:-` | **IF** (rule) | `a :- b.` |
+| `,` `;` | **AND**, **OR** | `male(X), parent(X, Y)` |
+| `\+` | **NOT** (cannot be proven) | `\+ male(jana)` |
+| `->` | if-then(-else) | `(X > 0 -> S = pos ; S = neg)` |
+| `!` | **cut**: stop backtracking here | `max(X, Y, X) :- X >= Y, !.` |
+| `=` `\=` | unify / cannot unify | `X = jiri` |
+| `==` `\==` | identical / not identical (no binding) | `a == a` |
+| `is` | **compute** arithmetic | `X is 2 + 3` → `5` |
+| `=:=` `=\=` | numbers equal / not equal | `1 + 2 =:= 3` |
+| `<` `>` `=<` `>=` | compare numbers (**`=<`, not `<=`**) | `3 =< 5` |
+| `+` `-` `*` `/` `//` `mod` `**` | arithmetic (`//` integer division) | `X is 7 // 2` → `3` |
+
+> ⚠️ `X = 2 + 3` → `X = 2+3` (just a structure) &nbsp;·&nbsp; `X is 2 + 3` → `X = 5` (computed)
+
+---
+
+## 🔙 Backtracking
+
+**Goals left → right, facts top → bottom. If a goal fails, go back to the last 📍 choice point and try the next option.**
+
+```mermaid
+flowchart TD
+    Q["?- grandfather(Who, tereza)"] --> M{"📍 male(Grandpa)"}
+    M -->|"① jiri"| P1{"📍 parent(jiri, Parent)"}
+    M -->|"④ petr (after ;)"| P2{"parent(petr, Parent)"}
+    P1 -->|"② alena"| F1["parent(alena, tereza)<br/>❌ back to 📍"]
+    P1 -->|"③ petr"| S1["parent(petr, tereza)<br/>✅ Who = jiri"]
+    P2 -->|"⑤ tereza"| F2["parent(tereza, tereza)<br/>❌ nothing left → false"]
+
+    classDef ok fill:#c8f7c5,stroke:#2e7d32,color:#000
+    classDef bad fill:#ffd6d6,stroke:#c62828,color:#000
+    class S1 ok
+    class F1,F2 bad
+```
+
+```prolog
+?- grandfather(Who, tereza).
+Who = jiri ;      % ";" = "look for another answer" → forces backtracking
+false.            % no other answer exists
+```
+
+---
+
 ## 💻 How to Run the Programs
 
 ### 1. Start SWI-Prolog
