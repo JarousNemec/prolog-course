@@ -10,8 +10,8 @@ woman(jana).
 man(jan).
 woman(sarka).
 
-man(michala).
-woman(josef).
+man(josef).
+woman(michala).
 
 parents(karel, jana, jan).
 parents(karel, jana, michala).
@@ -143,5 +143,149 @@ false.
 [1] 23 ?- daughter(Daughter, josef). 
 Daughter = iveta ;
 Daughter = anna ;
+false.
+*/
+
+sibling1(S1, S2) :-    
+    parents(Father, Mother, S1),
+    parents(Father, Mother, S2),
+    S1 \= S2.
+
+sibling2(S1, S2) :-  
+    S1 \= S2,  
+    parents(Father, Mother, S1),
+    parents(Father, Mother, S2).
+
+/*
+11 ?- sibling1(Iveta, Anna).
+Iveta = jan,
+Anna = michala 
+Iveta = michala,
+Anna = jan ;
+Iveta = franta,
+Anna = tomas ;
+Iveta = tomas,
+Anna = franta ;
+Iveta = iveta,
+Anna = anna ;
+Iveta = anna,
+Anna = iveta ;
+false.
+*/
+
+
+brother(Brother, X) :-
+    man(X),
+    sibling1(Brother, X).
+
+sister(Sister, X) :-
+    woman(X),
+    sibling1(Sister, X).
+
+/*
+17 ?- brother(B, franta).
+B = tomas ;
+false.
+
+17 ?- sister(S, iveta). 
+S = anna ;
+false.
+*/
+ancestor(Ancestor, X) :-
+    parent(Ancestor, X).
+
+ancestor(Ancestor, X) :-
+    parent(Parent, X),
+    ancestor(Ancestor, Parent).
+
+/*
+Romana
+    Sylva
+    Franta
+        Sarka
+        Jan
+            Karel 
+            Jana
+
+29 ?- ancestor(Ancestor, romana).      
+Ancestor = franta ;
+Ancestor = sylva ;
+Ancestor = jan ;
+Ancestor = sarka ;
+Ancestor = karel ;
+Ancestor = jana ;
+*/
+
+child(Child, Ancestor) :-
+    ancestor(Ancestor, Child).
+
+/*
+33 ?- child(Child, karel).  
+Child = jan ;
+Child = michala ;
+Child = franta ;
+Child = tomas ;
+Child = romana ;
+Child = vera ;
+Child = iveta ;
+Child = anna ;
+Child = julie ;
+Child = hektor ;
+*/
+
+person(P) :-
+    man(P) ; woman(P).
+
+/*
+41 ?- person(P), \+ man(P).
+P = jana ;
+P = sarka ;
+P = josef ;
+P = sylva ;
+P = petra ;
+P = iveta ;
+P = anna ;
+P = romana ;
+P = vera ;
+P = julie.
+
+41 ?- person(P), \+ \+ man(P).
+P = karel ;
+P = jan ;
+P = michala ;
+P = franta ;
+P = tomas ;
+P = petr ;
+P = jiri ;
+P = hektor ;
+false.
+*/
+
+% when there is a way without negation do it that way
+
+print_ancestors:-
+    write('Enter person name:'),
+    nl,
+    read(Person),
+    write('Loaded person name is '),
+    write(Person),
+    nl,
+    ancestor(Ancestor, Person),
+    write(Ancestor),
+    nl,
+    fail.
+print_ancestors. % cosmetic tuning
+
+/*
+[1] 58 ?- print_ancestors. 
+Enter person name:
+|: romana.          
+Loaded person name is romana
+franta
+sylva
+jan
+sarka
+karel
+jana
 false.
 */
